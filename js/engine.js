@@ -9,8 +9,9 @@
  * drawn but that is not the case. What's really happening is the entire "scene"
  * is being drawn over and over, presenting the illusion of animation.
  *
- * This engine makes the canvas' context (ctx) object globally available to make 
- * writing app.js a little simpler to work with.
+ * This engine is available globally via the Engine variable and it also makes
+ * the canvas' context (ctx) object globally available to make writing app.js
+ * a little simpler to work with.
  */
 
 var Engine = (function(global) {
@@ -22,12 +23,13 @@ var Engine = (function(global) {
         win = global.window,
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
+        paused = false,
         lastTime;
+
 
     canvas.width = 505;
     canvas.height = 606;
     doc.body.appendChild(canvas);
-
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
      */
@@ -44,8 +46,10 @@ var Engine = (function(global) {
         /* Call our update/render functions, pass along the time delta to
          * our update function since it may be used for smooth animation.
          */
-        update(dt);
-        render();
+        if (paused === false){
+            update(dt);
+            render();
+        }
 
         /* Set our lastTime variable which is used to determine the time delta
          * for the next time this function is called.
@@ -79,7 +83,8 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions();
+        checkWinCondition();
     }
 
     /* This is called by the update function and loops through all of the
@@ -96,6 +101,77 @@ var Engine = (function(global) {
         player.update();
     }
 
+    /*Determines collision between entities in the game and the edges of 
+    the map for enemies.
+    */
+    function checkCollisions(){
+        allEnemies.forEach(function(enemy){
+            //Reset enemies when they cross the edge of the map.
+            if (enemy.x > 505){
+                enemy.x = -95;
+                enemy.speedChange();
+            }
+            /* Displays defeat message and resets the game if the player collides with the enemy.
+            * I decided to use the player entity to check itself for collisions. It seemed natural
+            * to me to have the single entity check itself against the many different ones instead of 
+            * the other way around.
+            */
+            if (player.checkCollision(enemy)){
+                paused = true;
+                //Draws the victory text on screen after a small delay.
+                var defeatText = setTimeout(function(){
+                    drawEndgameText(false);
+                }, 500);
+                //Resets the game after a delay.
+                setTimeout(function(){
+                    reset();
+                }, 3000);
+            }
+        });
+    }
+
+    /*Checks to determine whether the player has entered the win condition zone.
+    * If successful, it will reset the entities and display the victory text.
+    */
+    function checkWinCondition(){
+        if (player.y < 0){
+            paused = true;
+            //Draws the victory text on screen after a small delay.
+            var victoryText = setTimeout(function(){
+                drawEndgameText(true);
+            }, 500);
+            //Resets the game after a delay.
+            setTimeout(function(){
+                reset();
+            }, 3000);
+        }
+    }
+
+    /*Sets the Text configuration for victory or defeat and draws it on the screen.
+    */
+    function drawEndgameText(victoryOrDefeat){
+        var text;
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 1;
+        ctx.font= '72px impact';
+        //Sets victory text configuration.
+        if (victoryOrDefeat){
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = 'black';
+            text = 'Victory!';
+        }
+        //Sets Defeat text configuration.
+        else{
+            ctx.fillStyle = 'red';
+            ctx.strokeStyle = 'white';
+            text = 'Defeat!';
+        }
+            //Draws the text on screen.
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+            ctx.lineWidth = 2;
+            ctx.strokeText(text, canvas.width /2, canvas.height / 2);
+    }
+
     /* This function initially draws the "game level", it will then call
      * the renderEntities function. Remember, this function is called every
      * game tick (or loop of the game engine) because that's how games work -
@@ -103,6 +179,10 @@ var Engine = (function(global) {
      * they are just drawing the entire screen over and over.
      */
     function render() {
+        /*This clears the canvas before redrawing it. Doing so removes lingering
+        elements drawn outside the board. 
+        */
+        canvas.width = canvas.width;
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
@@ -117,9 +197,6 @@ var Engine = (function(global) {
             numRows = 6,
             numCols = 5,
             row, col;
-        
-        // Before drawing, clear existing canvas
-        ctx.clearRect(0,0,canvas.width,canvas.height)
 
         /* Loop through the number of rows and columns we've defined above
          * and, using the rowImages array, draw the correct image for that
@@ -161,7 +238,12 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+        /* Resets the game to start condition by reassigning the variables to 
+        new instances, flagging the old ones for garbage collection. */
+        var defaultHitbox = {sizeX: 80, sizeY: 80};
+        allEnemies = [ new Enemy({x : 0, y : 40}, defaultHitbox), new Enemy({x : 0, y : 125}, defaultHitbox), new Enemy({x : 0, y : 210}, defaultHitbox) ];
+        player = new Player(defaultHitbox);
+        paused = false;
     }
 
     /* Go ahead and load all of the images we know we're going to need to
