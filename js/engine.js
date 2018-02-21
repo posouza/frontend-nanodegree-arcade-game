@@ -83,7 +83,18 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
+        Enemy.prototype.checkCollisions = function (dt) {
+                //collision or win judgement
+            if ((player.x < this.x + 83 &&
+                player.x + 83 > this.x &&
+                player.y < this.y + 60 &&
+                player.y + 60 > this.y) ||
+                player.y < 0) {
+                player.reset(dt);
+            }
+        };
         updateEntities(dt);
+        
     }
 
     /* This is called by the update function and loops through all of the

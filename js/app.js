@@ -39,16 +39,16 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-Enemy.prototype.checkCollisions = function (dt) {
-    // collision or win judgement
-    if ((player.x < this.x + 83 &&
-        player.x + 83 > this.x &&
-        player.y < this.y + 60 &&
-        player.y + 60 > this.y) ||
-        player.y < 0) {
-        player.reset(dt);
-    }
-};
+// Enemy.prototype.checkCollisions = function (dt) {
+//     // collision or win judgement
+//     if ((player.x < this.x + 83 &&
+//         player.x + 83 > this.x &&
+//         player.y < this.y + 60 &&
+//         player.y + 60 > this.y) ||
+//         player.y < 0) {
+//         player.reset(dt);
+//     }
+// };
 
 // Now write your own player class
 // This class requires an update(), render() and
