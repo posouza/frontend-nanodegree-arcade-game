@@ -26,7 +26,7 @@ var Engine = (function(global) {
         lastTime;
 
     canvas.width = 505;
-    canvas.height = 707;
+    canvas.height = 606;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -46,7 +46,7 @@ var Engine = (function(global) {
          * our update function since it may be used for smooth animation.
          */
         update(dt);
-        render(dt);
+        render();
 
         /* Set our lastTime variable which is used to determine the time delta
          * for the next time this function is called.
@@ -64,11 +64,7 @@ var Engine = (function(global) {
      * game loop.
      */
     function init() {
-        // make sure google font had already loaded when reset game
-        window.onload = function () {
-            reset();
-        };
-        // reset();
+        reset();
         lastTime = Date.now();
         main();
     }
@@ -83,25 +79,15 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
-        Enemy.prototype.checkCollisions = function (dt) {
-                //collision or win judgement
-            if ((player.x < this.x + 83 &&
-                player.x + 83 > this.x &&
-                player.y < this.y + 60 &&
-                player.y + 60 > this.y) ||
-                player.y < 0) {
-                player.reset(dt);
-            }
-        };
         updateEntities(dt);
-        
+        // checkCollisions();
     }
 
-    /* This is called by the update function and loops through all of the
+    /* This is called by the update function  and loops through all of the
      * objects within your allEnemies array as defined in app.js and calls
      * their update() methods. It will then call the update function for your
      * player object. These update methods should focus purely on updating
-     * the data/properties related to the object. Do your drawing in your
+     * the data/properties related to  the object. Do your drawing in your
      * render methods.
      */
     function updateEntities(dt) {
@@ -117,7 +103,7 @@ var Engine = (function(global) {
      * they are flipbooks creating the illusion of animation but in reality
      * they are just drawing the entire screen over and over.
      */
-    function render(dt) {
+    function render() {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
@@ -150,21 +136,22 @@ var Engine = (function(global) {
             }
         }
 
-        renderEntities(dt);
+
+        renderEntities();
     }
 
     /* This function is called by the render function and is called on each game
-     * tick. Its purpose is to then call the render functions you have defined
+     * tick. It's purpose is to then call the render functions you have defined
      * on your enemy and player entities within app.js
      */
-    function renderEntities(dt) {
+    function renderEntities() {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
         allEnemies.forEach(function(enemy) {
             enemy.render();
-            enemy.checkCollisions(dt);
         });
+
         player.render();
     }
 
@@ -173,26 +160,7 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // This reset function can draw a welcome message in the beginning.
-        // Used a method in stackoverflow, answered by @a paid nerd.
-        // See link: http://goo.gl/1JAuCn
-        var welcomeMsg = new Image();
-        welcomeMsg.src = 'https://fonts.googleapis.com/css?family=Sigmar+One';
-
-        welcomeMsg.onerror = function() {
-            ctx.font = 'bold 50px "Sigmar One"';
-            ctx.fillStyle = "#000";
-            ctx.fillText("ANGRY BUG", 78, 111);
-            ctx.font = '30px "Sigmar One"';
-            ctx.fillText("Use arrow keys to", 78, 411);
-            ctx.fillText("Control your hero!", 78, 451);
-            alert('Press enter to start');
-        };
-
-        // draw hearts
-        ctx.fillStyle = "Black";
-        ctx.font = '25px "Sigmar One"';
-        ctx.fillText("Left Hearts:", 10, 640);
+        // noop
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -204,24 +172,12 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png',
-        'images/char-cat-girl.png',
-        'images/char-horn-girl.png',
-        'images/char-pink-girl.png',
-        'images/char-princess-girl.png',
-        'images/Gem Blue.png',
-        'images/Gem Green.png',
-        'images/Gem Orange.png',
-        'images/Heart.png',
-        'images/Key.png',
-        'images/Rock.png',
-        'images/Selector.png',
-        'images/Star.png'
+        'images/char-boy.png'
     ]);
     Resources.onReady(init);
 
     /* Assign the canvas' context object to the global variable (the window
-     * object when run in a browser) so that developers can use it more easily
+     * object when run in a browser) so that developer's can use it more easily
      * from within their app.js files.
      */
     global.ctx = ctx;
